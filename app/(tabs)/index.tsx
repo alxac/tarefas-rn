@@ -1,74 +1,67 @@
-import { Image, StyleSheet, Platform } from 'react-native';
+import { Pressable, ScrollView, Text, View, TextInput } from 'react-native';
 
-import { HelloWave } from '@/components/HelloWave';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
+import tarefasMock from '@/data/constants/tarefas';
+import { bgBlue500, bgRed500, botao, flex1, flexRow, gap5, itemsCenter, lineThrough, px4, textWhite, textZinc500, w_9_10 } from '@/styles';
+import { useState } from 'react';
+import Tarefa from '@/data/model/Tarefas';
+import { AntDesign } from '@expo/vector-icons';
 
 export default function HomeScreen() {
+  const [tarefas, setTarefas] = useState<Tarefa[]>(tarefasMock);
+  const [descricao, setDescricao] = useState<string>("teste001");
+
+  function concluir(tarefa: Tarefa) {
+    const novasT = tarefas.map((t) => {
+      if (t.id === tarefa.id) {
+        return { ...t, concluido: !t.concluido }
+      }
+      return t
+    })
+    setTarefas(novasT)
+  }
+
+  function exluirT(tarefa: Tarefa) {
+    const novasT = tarefas.filter((t) => t.id !== tarefa.id)
+    setTarefas(novasT)
+  }
+
+  function addT() {
+    if (descricao.trim() === '') {
+      return
+    }
+    const novoT: Tarefa = {
+      id: Math.random(),
+      descricao,
+      concluido: false,
+    }
+    setTarefas([...tarefas, novoT])
+    setDescricao
+  }
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12'
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-        <ThemedText>
-          Tap the Explore tab to learn more about what's included in this starter app.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          When you're ready, run{' '}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+    <ScrollView contentContainerStyle={{
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+    }}>
+      <View>
+        <TextInput value={descricao} onChangeText={setDescricao} style={textWhite} />
+        <Pressable style={[botao, px4]} onPress={addT}>
+          <AntDesign name='plus' size={9} color="white" />
+        </Pressable>
+      </View>
+      <View style={w_9_10}>
+        {tarefas.map((t) => (
+          <View key={t.id} style={[flexRow, gap5, itemsCenter]}>
+            <Text style={t.concluido ? [textWhite, lineThrough, textZinc500, flex1] : [textWhite, flex1]}>{t.descricao}</Text>
+            <Pressable onPress={() => concluir(t)}>
+              <AntDesign name='eye' size={15} color="white" />
+            </Pressable>
+            <Pressable style={[botao, bgRed500, px4]} onPress={() => exluirT(t)}>
+              <AntDesign name='delete' size={9} color="white" />
+            </Pressable>
+          </View>
+        ))}
+      </View>
+    </ScrollView>
   );
 }
-
-const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
-  },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
-  },
-});
